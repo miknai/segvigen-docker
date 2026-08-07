@@ -86,8 +86,13 @@ ENV PATH="${CONDA_DIR}/envs/trellis2/bin:${PATH}"
 # ---------------------------------------------------------------------------
 # SegviGen's own extra requirements, on top of TRELLIS.2 (see README.md)
 # ---------------------------------------------------------------------------
+# README pins no mathutils version, so pip grabs latest (5.1.0), whose C
+# source uses PyLong_AsInt -- a CPython API only added in Python 3.13. We're
+# on 3.10, so that fails to compile. Pin to 3.3.0 (the release just before
+# a large gap to 5.1.0 on PyPI), which predates Python 3.13 entirely and
+# lines up with the bpy==4.0.0 (Blender 4.0) version pinned below.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install mathutils \
+    pip install mathutils==3.3.0 \
     && pip install transformers==4.57.6 \
     && pip install bpy==4.0.0 --extra-index-url https://download.blender.org/pypi/ \
     && pip install --upgrade Pillow
