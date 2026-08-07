@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         bash sudo coreutils procps iproute2 \
         ca-certificates curl git wget \
         build-essential cmake ninja-build \
-        libjpeg-dev libsm6 libxrender1 libxext6 \
+        libjpeg-dev libsm6 libxrender1 libxext6 libeigen3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
