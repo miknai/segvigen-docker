@@ -58,6 +58,11 @@ ENV TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6;8.9;9.0"
 RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/nvidia-smi \
     && chmod +x /usr/local/bin/nvidia-smi
 
+# Anaconda now requires explicit Terms of Service acceptance for its
+# default channels before conda will use them, even with -y.
+RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main \
+    && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
 # setup.sh's own `conda create -n trellis2 python=3.10` has no -y flag, so
 # it can't get past its confirmation prompt in a non-interactive build --
 # and since the script has no `set -e` anywhere, that failure is silently
