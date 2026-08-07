@@ -47,8 +47,21 @@ WORKDIR /opt/TRELLIS.2
 # Architectures for common Databricks GPU node types:
 # T4=7.5, A100=8.0, A10G=8.6, L4=8.9, H100=9.0. Extend if you use other SKUs.
 ENV TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6;8.9;9.0"
+
+# setup.sh gates everything on `command -v nvidia-smi` succeeding, but never
+# actually runs it or parses its output -- confirmed against the upstream
+# script. No live GPU is needed to build these extensions since
+# TORCH_CUDA_ARCH_LIST above already tells PyTorch's build tooling which
+# architectures to target instead of querying a device. This stub only
+# needs to exist on PATH for that one check, then gets removed so it can
+# never shadow the real nvidia-smi injected at runtime on the GPU cluster.
+RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/nvidia-smi \
+    && chmod +x /usr/local/bin/nvidia-smi
+
 RUN --mount=type=cache,target=/root/.cache/pip \
     /bin/bash -lc "chmod +x setup.sh && bash setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
+
+RUN rm -f /usr/local/bin/nvidia-smi
 
 # Databricks execs python/pip directly -- it does not source .bashrc or
 # `conda activate`. Prepend the trellis2 env so it's the default everywhere.
