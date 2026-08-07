@@ -58,8 +58,14 @@ ENV TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6;8.9;9.0"
 RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/nvidia-smi \
     && chmod +x /usr/local/bin/nvidia-smi
 
+# o_voxel/cumesh/flex_gemm each declare `torch` as a pyproject.toml build
+# dependency with no version/index pin. Without --no-build-isolation, pip
+# fetches a fresh, unpinned torch from PyPI into an isolated build sandbox
+# to satisfy that -- today that resolves to a build bundling CUDA 13.0,
+# which then clashes with this image's CUDA 12.4 nvcc. Reuse the env's
+# already-correct cu124-matched torch instead of sandboxing a new one.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    /bin/bash -lc "chmod +x setup.sh && bash setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
+    /bin/bash -lc "chmod +x setup.sh && PIP_NO_BUILD_ISOLATION=1 bash setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
 
 RUN rm -f /usr/local/bin/nvidia-smi
 
