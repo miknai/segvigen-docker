@@ -7,10 +7,6 @@ on:
     paths:
       - Dockerfile
       - .dockerignore
-      - trellis2/**
-      - data_toolkit/**
-      - inference_full.py
-      - inference_interactive.py
       - .github/workflows/build-databricks-image.yml
   workflow_dispatch: {}
 
@@ -23,10 +19,13 @@ env:
 
 jobs:
   build-and-push:
-    # Requires a self-hosted runner with a GPU, Docker, and the NVIDIA
-    # container toolkit, registered to this repo with these labels.
-    # See: Settings -> Actions -> Runners -> New self-hosted runner.
-    runs-on: [self-hosted, gpu]
+    # GitHub-hosted, CPU-only runner. TORCH_CUDA_ARCH_LIST in the Dockerfile
+    # tells the CUDA-extension builds (nvdiffrast/cumesh/flexgemm) which
+    # architectures to target without needing a live GPU. If a build fails
+    # with a "no CUDA device found" error, that means one of those setup
+    # scripts hard-requires a GPU, and this needs to move to a self-hosted
+    # GPU runner (with buildkitd configured for GPU passthrough) instead.
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
