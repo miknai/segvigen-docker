@@ -35,15 +35,11 @@
 #   /opt/conda/envs/trellis2/bin/python /opt/SegviGen/inference_full.py ...
 #
 # SETUP: upload this file to a Workspace file or DBFS/UC Volume path, then
-# reference it under cluster Advanced Options -> Init Scripts. Change
-# PERSIST_DIR below to a Unity Catalog volume path if you have one
-# available (/Volumes/<catalog>/<schema>/<volume>/segvigen-env) -- that's
-# preferable to DBFS root, which is slower over its FUSE mount and is
-# increasingly discouraged by Databricks.
+# reference it under cluster Advanced Options -> Init Scripts.
 
 set -uo pipefail  # deliberately not -e: see note below setup.sh call
 
-PERSIST_DIR="/dbfs/FileStore/segvigen_env"
+PERSIST_DIR="/Volumes/development/team_3d_dpc/gk-segvigen/segvigen-env"
 CONDA_DIR="/opt/conda"
 SEGVIGEN_DIR="/opt/SegviGen"
 ENV_ARCHIVE="${PERSIST_DIR}/conda-trellis2.tar.gz"
