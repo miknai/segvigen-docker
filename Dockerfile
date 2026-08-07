@@ -48,7 +48,7 @@ WORKDIR /opt/TRELLIS.2
 # T4=7.5, A100=8.0, A10G=8.6, L4=8.9, H100=9.0. Extend if you use other SKUs.
 ENV TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6;8.9;9.0"
 RUN --mount=type=cache,target=/root/.cache/pip \
-    /bin/bash -lc "./setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
+    /bin/bash -lc "chmod +x setup.sh && bash setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
 
 # Databricks execs python/pip directly -- it does not source .bashrc or
 # `conda activate`. Prepend the trellis2 env so it's the default everywhere.
