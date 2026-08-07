@@ -58,18 +58,19 @@ ENV TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6;8.9;9.0"
 RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/nvidia-smi \
     && chmod +x /usr/local/bin/nvidia-smi
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /bin/bash -lc "chmod +x setup.sh && bash setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec"
+# setup.sh's own `conda create -n trellis2 python=3.10` has no -y flag, so
+# it can't get past its confirmation prompt in a non-interactive build --
+# and since the script has no `set -e` anywhere, that failure is silently
+# swallowed and everything installs into conda's *base* env (Python 3.14)
+# instead of trellis2. Create the env ourselves first (setup.sh's own
+# create call then harmlessly no-ops/fails on "already exists").
+RUN conda create -y -n trellis2 python=3.10
 
-# setup.sh's `conda activate trellis2` (inside its --new-env branch) is a
-# bare `conda activate` with no prior `source .../conda.sh` -- it doesn't
-# reliably carry over to the o_voxel/cumesh/flex_gemm builds, which ended
-# up compiling against conda's *base* env (Python 3.14, an unrelated torch
-# with CUDA 13.0) instead of trellis2 (Python 3.10, our cu124 torch).
-# Activate trellis2 explicitly and correctly ourselves before re-invoking
-# setup.sh for just those three extensions.
+# Bare `conda activate` also doesn't work inside a plain `bash script.sh`
+# invocation without sourcing conda's shell hook first -- do that
+# ourselves so every install in this one pass actually lands in trellis2.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    /bin/bash -lc "source ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate trellis2 && python --version && bash setup.sh --cumesh --o-voxel --flexgemm"
+    /bin/bash -lc "source ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate trellis2 && python --version && chmod +x setup.sh && bash setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
 
 RUN rm -f /usr/local/bin/nvidia-smi
 
